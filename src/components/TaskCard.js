@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 
 function TaskCard({ task, onComplete, onDelete }) {
   const [expanded, setExpanded] = useState(false);
@@ -12,14 +12,31 @@ function TaskCard({ task, onComplete, onDelete }) {
 
   const color = urgencyColors[task.urgencyLabel] || "#667eea";
 
-  const getTimeLeft = (deadline) => {
-    const diff = new Date(deadline) - new Date();
-    if (diff < 0) return "⚠️ Overdue!";
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-    if (days > 0) return `${days}d ${hours % 24}h left`;
-    return `${hours}h left`;
-  };
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+        const updateTimer = () => {
+          if (task.completed) {
+            setTimeLeft("✅ Completed");
+            return;
+          }
+          const diff = new Date(task.deadline) - new Date();
+        if (diff < 0) {
+          setTimeLeft("⚠️ Overdue!");
+          return;
+        }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        if (days > 0) setTimeLeft(`${days}d ${hours}h ${minutes}m left`);
+        else if (hours > 0) setTimeLeft(`${hours}h ${minutes}m ${seconds}s left`);
+        else setTimeLeft(`⚡ ${minutes}m ${seconds}s left!`);
+      };
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
+      return () => clearInterval(interval);
+    }, [task.deadline]);
 
   const styles = {
     card: {
@@ -95,7 +112,7 @@ function TaskCard({ task, onComplete, onDelete }) {
 
       <div style={styles.meta}>
         <span>📅 {new Date(task.deadline).toLocaleDateString()}</span>
-        <span>⏰ {getTimeLeft(task.deadline)}</span>
+        <span>⏰ {timeLeft}</span>
         <span>🏷️ {task.category}</span>
         <span>⚡ {task.urgencyScore}/10</span>
         <span>🕐 ~{task.estimatedHours}h</span>
