@@ -1,158 +1,164 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { askGemini } from "../gemini";
 
 function AiChat({ user, tasks }) {
-  const [messages, setMessages] = useState([
-    {
-      role: "ai",
-      text: `Hey ${user.displayName?.split(" ")[0]}! 👋 I'm your AI productivity coach. Ask me anything about your tasks, deadlines, or how to manage your time better!`,
-    },
-  ]);
-  const [input, setInput] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
+  const [activeType, setActiveType] = useState("");
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const suggestionTypes = [
+    { id: "priority", label: "📊 What to do first?", emoji: "📊" },
+    { id: "schedule", label: "🕐 Plan my day", emoji: "🕐" },
+    { id: "tips", label: "💡 Productivity tips", emoji: "💡" },
+    { id: "motivate", label: "🔥 Motivate me!", emoji: "🔥" },
+  ];
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const userMsg = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", text: userMsg }]);
+  const getSuggestion = async (type) => {
     setLoading(true);
+    setActiveType(type);
+    setSuggestions([]);
 
-    const taskSummary = tasks.length > 0
-      ? tasks
-          .filter((t) => !t.completed)
-          .map((t) => `- ${t.title} (due: ${t.deadline}, urgency: ${t.urgencyLabel})`)
-          .join("\n")
+    const pendingTasks = tasks.filter((t) => !t.completed);
+    const taskList = pendingTasks.length > 0
+      ? pendingTasks.map((t) => `- ${t.title} (due: ${t.deadline}, urgency: ${t.urgencyLabel})`).join("\n")
       : "No pending tasks";
 
-    const prompt = `You are a helpful AI productivity coach for ${user.displayName}.
-Their current pending tasks are:
-${taskSummary}
+    const prompts = {
+      priority: `You are a productivity coach. Based on these tasks, tell me exactly what to do first and why. Be specific and actionable. Tasks:\n${taskList}\n\nGive 3 specific action points as a numbered list.`,
+      schedule: `You are a time management expert. Create a simple hourly schedule for today based on these tasks:\n${taskList}\n\nFormat as: TIME - TASK - DURATION. Give 4-5 time blocks.`,
+      tips: `You are a productivity expert. Give 3 specific productivity tips for someone with these pending tasks:\n${taskList}\n\nMake tips practical and specific to these tasks.`,
+      motivate: `You are an energetic motivational coach. Give a short powerful motivational message for someone with these tasks:\n${taskList}\n\nBe energetic, specific, and end with a call to action!`,
+    };
 
-User question: ${userMsg}
-
-Give a helpful, concise, motivating response. Keep it under 150 words.`;
-
-    const response = await askGemini(prompt);
-    setMessages((prev) => [...prev, { role: "ai", text: response }]);
+    const result = await askGemini(prompts[type]);
+    
+    const lines = result
+      .split("\n")
+      .filter((line) => line.trim().length > 0)
+      .slice(0, 5);
+    
+    setSuggestions(lines);
     setLoading(false);
-  };
-
-  const handleKey = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
   };
 
   const styles = {
     container: {
-      display: "flex",
-      flexDirection: "column",
-      height: "70vh",
       background: "rgba(255,255,255,0.03)",
       borderRadius: "20px",
+      padding: "2rem",
       border: "1px solid rgba(255,255,255,0.1)",
-      overflow: "hidden",
     },
-    header: {
-      padding: "1rem 1.5rem",
-      background: "rgba(255,255,255,0.05)",
-      borderBottom: "1px solid rgba(255,255,255,0.1)",
-      fontWeight: "700",
-      fontSize: "1rem",
-    },
-    messages: {
-      flex: 1,
-      overflowY: "auto",
-      padding: "1.5rem",
-      display: "flex",
-      flexDirection: "column",
-      gap: "1rem",
-    },
-    bubble: (role) => ({
-      maxWidth: "75%",
-      padding: "12px 16px",
-      borderRadius: role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-      background: role === "user"
-        ? "linear-gradient(90deg, #667eea, #764ba2)"
-        : "rgba(255,255,255,0.08)",
-      alignSelf: role === "user" ? "flex-end" : "flex-start",
-      fontSize: "0.9rem",
-      lineHeight: "1.5",
-      color: "#fff",
-      border: role === "ai" ? "1px solid rgba(255,255,255,0.1)" : "none",
-    }),
-    inputArea: {
-      display: "flex",
-      gap: "0.5rem",
-      padding: "1rem 1.5rem",
-      borderTop: "1px solid rgba(255,255,255,0.1)",
-      background: "rgba(255,255,255,0.03)",
-    },
-    input: {
-      flex: 1,
-      background: "rgba(255,255,255,0.08)",
-      border: "1px solid rgba(255,255,255,0.15)",
-      borderRadius: "12px",
-      padding: "12px 16px",
-      color: "#fff",
-      fontSize: "0.95rem",
-      outline: "none",
-    },
-    sendBtn: {
+    title: {
+      fontSize: "1.5rem",
+      fontWeight: "800",
+      marginBottom: "0.5rem",
       background: "linear-gradient(90deg, #667eea, #764ba2)",
-      border: "none",
-      borderRadius: "12px",
-      padding: "12px 20px",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+    },
+    subtitle: {
+      color: "rgba(255,255,255,0.5)",
+      fontSize: "0.9rem",
+      marginBottom: "1.5rem",
+    },
+    btnGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(2, 1fr)",
+      gap: "1rem",
+      marginBottom: "2rem",
+    },
+    btn: (active) => ({
+      background: active
+        ? "linear-gradient(90deg, #667eea, #764ba2)"
+        : "rgba(255,255,255,0.05)",
+      border: `1px solid ${active ? "#667eea" : "rgba(255,255,255,0.1)"}`,
+      borderRadius: "14px",
+      padding: "1rem",
       color: "#fff",
       cursor: "pointer",
-      fontWeight: "700",
       fontSize: "0.95rem",
+      fontWeight: active ? "700" : "400",
+      transition: "all 0.2s",
+      textAlign: "left",
+    }),
+    results: {
+      background: "rgba(255,255,255,0.05)",
+      borderRadius: "14px",
+      padding: "1.5rem",
+      border: "1px solid rgba(102,126,234,0.3)",
+    },
+    resultTitle: {
+      fontSize: "0.8rem",
+      color: "#667eea",
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: "1px",
+      marginBottom: "1rem",
+    },
+    line: {
+      padding: "0.7rem 0",
+      borderBottom: "1px solid rgba(255,255,255,0.05)",
+      fontSize: "0.9rem",
+      color: "rgba(255,255,255,0.85)",
+      lineHeight: "1.5",
     },
   };
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>🤖 AI Productivity Coach</div>
-      <div style={styles.messages}>
-        {messages.map((msg, i) => (
-          <div key={i} style={styles.bubble(msg.role)}>
-            {msg.role === "ai" && (
-              <span style={{ fontSize: "0.75rem", color: "#667eea", display: "block", marginBottom: "4px" }}>
-                ⚡ Gemini
-              </span>
-            )}
-            {msg.text}
-          </div>
+      <div style={styles.title}>🤖 AI Assistant</div>
+      <div style={styles.subtitle}>
+        Powered by Gemini — tap a button to get instant AI advice!
+      </div>
+
+      <div style={styles.btnGrid}>
+        {suggestionTypes.map((type) => (
+          <button
+            key={type.id}
+            style={styles.btn(activeType === type.id)}
+            onClick={() => getSuggestion(type.id)}
+            disabled={loading}
+          >
+            {type.label}
+          </button>
         ))}
-        {loading && (
-          <div style={styles.bubble("ai")}>
-            <span style={{ fontSize: "0.75rem", color: "#667eea", display: "block", marginBottom: "4px" }}>
-              ⚡ Gemini
-            </span>
-            🤔 Thinking...
+      </div>
+
+      {loading && (
+        <div style={{
+          textAlign: "center",
+          padding: "2rem",
+          color: "#667eea",
+          fontSize: "1rem",
+        }}>
+          <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🤖</div>
+          Gemini is thinking...
+        </div>
+      )}
+
+      {!loading && suggestions.length > 0 && (
+        <div style={styles.results}>
+          <div style={styles.resultTitle}>
+            ⚡ Gemini says:
           </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
-      <div style={styles.inputArea}>
-        <input
-          style={styles.input}
-          placeholder="Ask me anything about your tasks..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKey}
-        />
-        <button style={styles.sendBtn} onClick={sendMessage} disabled={loading}>
-          Send
-        </button>
-      </div>
+          {suggestions.map((line, i) => (
+            <div key={i} style={styles.line}>
+              {line}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && suggestions.length === 0 && (
+        <div style={{
+          textAlign: "center",
+          padding: "2rem",
+          color: "rgba(255,255,255,0.3)",
+          fontSize: "0.9rem",
+        }}>
+          👆 Tap any button above to get AI-powered advice!
+        </div>
+      )}
     </div>
   );
 }
