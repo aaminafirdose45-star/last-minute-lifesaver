@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { db } from "../firebase";
 import {
   collection, addDoc, getDocs, deleteDoc,
@@ -21,14 +21,16 @@ function Dashboard({ user, onLogout }) {
   const [streak, setStreak] = useState(0);
 
   useEffect(() => {
-    fetchTasks();
-    const savedXp = localStorage.getItem("xp") || 0;
-    const savedStreak = localStorage.getItem("streak") || 0;
-    setXp(Number(savedXp));
-    setStreak(Number(savedStreak));
-  }, []);
+  fetchTasks();
 
-  const fetchTasks = async () => {
+  const savedXp = localStorage.getItem("xp") || 0;
+  const savedStreak = localStorage.getItem("streak") || 0;
+
+  setXp(Number(savedXp));
+  setStreak(Number(savedStreak));
+}, [fetchTasks]);
+
+  const fetchTasks = useCallback(async () => {
     try {
       const q = query(
         collection(db, "tasks"),
@@ -43,7 +45,7 @@ function Dashboard({ user, onLogout }) {
       const localTasks = JSON.parse(localStorage.getItem(`tasks_${user.uid}`) || "[]");
       setTasks(localTasks);
     }
-  };
+  }, [user.uid]);
 
   const addTask = async (title, deadline, category) => {
     setLoading(true);
