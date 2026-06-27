@@ -20,16 +20,7 @@ function Dashboard({ user, onLogout }) {
   const [xp, setXp] = useState(0);
   const [streak, setStreak] = useState(0);
 
-  useEffect(() => {
-  fetchTasks();
-
-  const savedXp = localStorage.getItem("xp") || 0;
-  const savedStreak = localStorage.getItem("streak") || 0;
-
-  setXp(Number(savedXp));
-  setStreak(Number(savedStreak));
-}, [fetchTasks]);
-
+  
   const fetchTasks = useCallback(async () => {
     try {
       const q = query(
@@ -46,6 +37,17 @@ function Dashboard({ user, onLogout }) {
       setTasks(localTasks);
     }
   }, [user.uid]);
+
+  useEffect(() => {
+  fetchTasks();
+
+  const savedXp = localStorage.getItem("xp") || 0;
+  const savedStreak = localStorage.getItem("streak") || 0;
+
+  setXp(Number(savedXp));
+  setStreak(Number(savedStreak));
+}, [fetchTasks]);
+
 
   const addTask = async (title, deadline, category) => {
     setLoading(true);
