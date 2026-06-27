@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { askGemini } from "../gemini";
+import { askGemini, getAiProviderName } from "../gemini";
 
 function AiChat({ user, tasks }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -108,7 +108,7 @@ function AiChat({ user, tasks }) {
     <div style={styles.container}>
       <div style={styles.title}>🤖 AI Assistant</div>
       <div style={styles.subtitle}>
-        Powered by Gemini — tap a button to get instant AI advice!
+        Powered by {getAiProviderName()} — tap a button to get instant AI advice!
       </div>
 
       <div style={styles.btnGrid}>
@@ -132,14 +132,14 @@ function AiChat({ user, tasks }) {
           fontSize: "1rem",
         }}>
           <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🤖</div>
-          Gemini is thinking...
+          {getAiProviderName()} is thinking...
         </div>
       )}
 
       {!loading && suggestions.length > 0 && (
         <div style={styles.results}>
           <div style={styles.resultTitle}>
-            ⚡ Gemini says:
+            ⚡ {getAiProviderName()} says:
           </div>
           {suggestions.map((line, i) => (
             <div key={i} style={styles.line}>

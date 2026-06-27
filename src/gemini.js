@@ -1,8 +1,44 @@
 const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY;
+
+export const getAiProviderName = () => {
+  if (GROQ_API_KEY) return "Groq";
+  if (GEMINI_API_KEY) return "Gemini";
+  return "AI";
+};
 
 export const askGemini = async (prompt) => {
+  if (GROQ_API_KEY) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+      const data = await response.json();
+      if (data.error) {
+        console.error("Groq API error details:", data.error);
+        return "AI error: " + data.error.message;
+      }
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error("Groq connection error:", error);
+      return "AI is thinking... please try again.";
+    }
+  }
+
+  if (!GEMINI_API_KEY) {
+    return "Error: Neither REACT_APP_GEMINI_API_KEY nor REACT_APP_GROQ_API_KEY is configured in your .env file.";
+  }
+
   try {
+    const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -23,6 +59,7 @@ export const askGemini = async (prompt) => {
     return "AI is thinking... please try again.";
   }
 };
+
 
 export const analyzeTask = async (title, deadline) => {
   const prompt = `You are a productivity AI assistant. Analyze this task and respond in JSON only.

@@ -24,8 +24,21 @@ function App() {
     }
   };
 
+  const handleGuestLogin = () => {
+    setUser({
+      uid: "guest-user-id",
+      displayName: "Guest User",
+      email: "guest@example.com",
+      photoURL: "https://api.dicebear.com/7.x/bottts/svg?seed=guest"
+    });
+  };
+
   const handleLogout = async () => {
-    await signOut(auth);
+    if (user?.uid === "guest-user-id") {
+      setUser(null);
+    } else {
+      await signOut(auth);
+    }
   };
 
   if (loading) {
@@ -49,7 +62,7 @@ function App() {
       {user ? (
         <Dashboard user={user} onLogout={handleLogout} />
       ) : (
-        <Login onLogin={handleLogin} />
+        <Login onLogin={handleLogin} onGuestLogin={handleGuestLogin} />
       )}
     </div>
   );

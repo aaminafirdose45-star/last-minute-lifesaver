@@ -1,6 +1,7 @@
 import React from "react";
+import { getAiProviderName } from "../gemini";
 
-function Login({ onLogin }) {
+function Login({ onLogin, onGuestLogin }) {
   return (
     <div style={{
       display: "flex",
@@ -154,12 +155,44 @@ function Login({ onLogin }) {
           Sign in with Google
         </button>
 
+        <button
+          onClick={onGuestLogin}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+            background: "rgba(255,255,255,0.08)",
+            color: "#ffffff",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "16px",
+            padding: "12px 28px",
+            fontSize: "0.95rem",
+            fontWeight: "600",
+            cursor: "pointer",
+            margin: "1rem auto 0 auto",
+            width: "100%",
+            maxWidth: "280px",
+            transition: "all 0.3s",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+            e.currentTarget.style.transform = "translateY(-2px)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          🔑 Continue as Guest
+        </button>
+
         <p style={{
           marginTop: "1.5rem",
           fontSize: "0.78rem",
           color: "rgba(255,255,255,0.25)",
         }}>
-          Powered by Google Gemini AI ✨
+          Powered by {getAiProviderName()} AI ✨
         </p>
       </div>
     </div>

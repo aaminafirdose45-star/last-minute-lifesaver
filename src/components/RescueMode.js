@@ -1,4 +1,5 @@
 import React from "react";
+import { getAiProviderName } from "../gemini";
 
 function RescueMode({ plan, onBack }) {
   return (
@@ -37,7 +38,7 @@ function RescueMode({ plan, onBack }) {
           color: "rgba(255,255,255,0.4)",
           fontSize: "0.9rem",
         }}>
-          Gemini has analyzed your situation
+          {getAiProviderName()} has analyzed your situation
         </div>
       </div>
 

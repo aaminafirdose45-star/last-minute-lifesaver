@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getAiProviderName } from "../gemini";
 
 function AddTask({ onAdd, onDone }) {
   const [title, setTitle] = useState("");
@@ -46,7 +47,7 @@ function AddTask({ onAdd, onDone }) {
         fontSize: "0.85rem",
         marginBottom: "1.5rem",
       }}>
-        Gemini will analyze urgency and create an action plan
+        {getAiProviderName()} will analyze urgency and create an action plan
       </p>
 
       {/* Title input */}
@@ -204,7 +205,7 @@ function AddTask({ onAdd, onDone }) {
         }}
       >
         {loading ? (
-          <>🤖 Gemini Analyzing...</>
+          <>🤖 {getAiProviderName()} Analyzing...</>
         ) : (
           <>⚡ Add Task & Analyze</>
         )}

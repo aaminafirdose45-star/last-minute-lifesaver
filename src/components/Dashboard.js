@@ -4,7 +4,7 @@ import {
   collection, addDoc, getDocs, deleteDoc,
   doc, updateDoc, query, where
 } from "firebase/firestore";
-import { analyzeTask, getRescuePlan } from "../gemini";
+import { analyzeTask, getRescuePlan, getAiProviderName } from "../gemini";
 
 const TaskCard = require("./TaskCard").default;
 const AddTask = require("./AddTask").default;
@@ -39,7 +39,9 @@ function Dashboard({ user, onLogout }) {
       taskList.sort((a, b) => (b.urgencyScore || 0) - (a.urgencyScore || 0));
       setTasks(taskList);
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.warn("Firebase fetch error, falling back to local storage:", error);
+      const localTasks = JSON.parse(localStorage.getItem(`tasks_${user.uid}`) || "[]");
+      setTasks(localTasks);
     }
   };
 
@@ -60,7 +62,18 @@ function Dashboard({ user, onLogout }) {
         tip: analysis.tip,
         createdAt: new Date().toISOString(),
       };
-      await addDoc(collection(db, "tasks"), newTask);
+      
+      try {
+        const docRef = await addDoc(collection(db, "tasks"), newTask);
+        newTask.id = docRef.id;
+      } catch (dbError) {
+        console.warn("Firestore save failed, saving to localStorage instead:", dbError);
+        const localTasks = JSON.parse(localStorage.getItem(`tasks_${user.uid}`) || "[]");
+        newTask.id = "local_" + Date.now();
+        localTasks.push(newTask);
+        localTasks.sort((a, b) => (b.urgencyScore || 0) - (a.urgencyScore || 0));
+        localStorage.setItem(`tasks_${user.uid}`, JSON.stringify(localTasks));
+      }
       await fetchTasks();
     } catch (error) {
       console.error("Add task error:", error);
@@ -69,7 +82,20 @@ function Dashboard({ user, onLogout }) {
   };
 
   const completeTask = async (taskId) => {
-    await updateDoc(doc(db, "tasks", taskId), { completed: true });
+    try {
+      if (taskId.toString().startsWith("local_")) {
+        const localTasks = JSON.parse(localStorage.getItem(`tasks_${user.uid}`) || "[]");
+        const updated = localTasks.map(t => t.id === taskId ? { ...t, completed: true } : t);
+        localStorage.setItem(`tasks_${user.uid}`, JSON.stringify(updated));
+      } else {
+        await updateDoc(doc(db, "tasks", taskId), { completed: true });
+      }
+    } catch (error) {
+      console.warn("Firestore update failed, updating locally:", error);
+      const localTasks = JSON.parse(localStorage.getItem(`tasks_${user.uid}`) || "[]");
+      const updated = localTasks.map(t => t.id === taskId ? { ...t, completed: true } : t);
+      localStorage.setItem(`tasks_${user.uid}`, JSON.stringify(updated));
+    }
     const newXp = xp + 50;
     const newStreak = streak + 1;
     setXp(newXp);
@@ -80,7 +106,20 @@ function Dashboard({ user, onLogout }) {
   };
 
   const deleteTask = async (taskId) => {
-    await deleteDoc(doc(db, "tasks", taskId));
+    try {
+      if (taskId.toString().startsWith("local_")) {
+        const localTasks = JSON.parse(localStorage.getItem(`tasks_${user.uid}`) || "[]");
+        const filtered = localTasks.filter(t => t.id !== taskId);
+        localStorage.setItem(`tasks_${user.uid}`, JSON.stringify(filtered));
+      } else {
+        await deleteDoc(doc(db, "tasks", taskId));
+      }
+    } catch (error) {
+      console.warn("Firestore delete failed, deleting locally:", error);
+      const localTasks = JSON.parse(localStorage.getItem(`tasks_${user.uid}`) || "[]");
+      const filtered = localTasks.filter(t => t.id !== taskId);
+      localStorage.setItem(`tasks_${user.uid}`, JSON.stringify(filtered));
+    }
     await fetchTasks();
   };
 
@@ -254,7 +293,7 @@ function Dashboard({ user, onLogout }) {
           }}>
             <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🤖</div>
             <div style={{ color: "#667eea", fontSize: "1.1rem", fontWeight: "600" }}>
-              Gemini is analyzing your task...
+              {getAiProviderName()} is analyzing your task...
             </div>
             <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.85rem", marginTop: "0.5rem" }}>
               This takes 2-3 seconds
