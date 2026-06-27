@@ -1,131 +1,125 @@
 import React from "react";
 
 function RescueMode({ plan, onBack }) {
-  const styles = {
-    container: {
-      background: "rgba(255,65,108,0.05)",
-      border: "1px solid rgba(255,65,108,0.3)",
-      borderRadius: "20px",
-      padding: "2rem",
+  return (
+    <div className="slide-in" style={{
       maxWidth: "600px",
       margin: "0 auto",
-    },
-    header: {
-      textAlign: "center",
-      marginBottom: "1.5rem",
-    },
-    title: {
-      fontSize: "2rem",
-      fontWeight: "800",
-      background: "linear-gradient(90deg, #ff416c, #ff4b2b)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-      marginBottom: "0.5rem",
-    },
-    message: {
-      background: "rgba(255,255,255,0.05)",
-      borderRadius: "12px",
-      padding: "1rem",
-      marginBottom: "1.5rem",
-      fontSize: "1rem",
-      color: "rgba(255,255,255,0.85)",
-      lineHeight: "1.6",
-      borderLeft: "4px solid #ff416c",
-    },
-    section: {
-      marginBottom: "1.5rem",
-    },
-    sectionTitle: {
-      fontSize: "0.85rem",
-      fontWeight: "700",
-      color: "rgba(255,255,255,0.5)",
-      textTransform: "uppercase",
-      letterSpacing: "1px",
-      marginBottom: "0.8rem",
-    },
-    priorityItem: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.8rem",
-      padding: "10px 14px",
-      background: "rgba(255,255,255,0.05)",
-      borderRadius: "10px",
-      marginBottom: "0.5rem",
-      fontSize: "0.9rem",
-    },
-    dropItem: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.8rem",
-      padding: "10px 14px",
-      background: "rgba(255,65,108,0.1)",
-      borderRadius: "10px",
-      marginBottom: "0.5rem",
-      fontSize: "0.9rem",
-      color: "rgba(255,255,255,0.6)",
-      textDecoration: "line-through",
-    },
-    nextAction: {
-      background: "linear-gradient(90deg, #667eea22, #764ba222)",
-      border: "1px solid #667eea",
-      borderRadius: "14px",
-      padding: "1.2rem",
-      marginBottom: "1.5rem",
-    },
-    nextActionTitle: {
-      fontSize: "0.85rem",
-      color: "#667eea",
-      fontWeight: "700",
-      marginBottom: "0.5rem",
-      textTransform: "uppercase",
-      letterSpacing: "1px",
-    },
-    nextActionText: {
-      fontSize: "1.1rem",
-      fontWeight: "700",
-      color: "#fff",
-    },
-    backBtn: {
-      width: "100%",
-      background: "rgba(255,255,255,0.1)",
-      border: "none",
-      borderRadius: "12px",
-      padding: "14px",
-      color: "#fff",
-      fontSize: "1rem",
-      fontWeight: "700",
-      cursor: "pointer",
-    },
-  };
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.title}>🚨 RESCUE MODE</div>
-        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.9rem" }}>
+    }}>
+      {/* Header */}
+      <div style={{
+        textAlign: "center",
+        marginBottom: "2rem",
+        padding: "2rem",
+        background: "linear-gradient(135deg, rgba(255,65,108,0.1), rgba(255,75,43,0.1))",
+        borderRadius: "24px",
+        border: "1px solid rgba(255,65,108,0.3)",
+      }}>
+        <div style={{
+          fontSize: "3.5rem",
+          marginBottom: "0.5rem",
+          animation: "pulse 1s infinite",
+          display: "inline-block",
+        }}>
+          🚨
+        </div>
+        <div style={{
+          fontSize: "2rem",
+          fontWeight: "800",
+          background: "linear-gradient(90deg, #ff416c, #ff4b2b)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          marginBottom: "0.3rem",
+        }}>
+          RESCUE MODE
+        </div>
+        <div style={{
+          color: "rgba(255,255,255,0.4)",
+          fontSize: "0.9rem",
+        }}>
           Gemini has analyzed your situation
         </div>
       </div>
 
-      <div style={styles.message}>
+      {/* Message */}
+      <div style={{
+        background: "rgba(255,255,255,0.05)",
+        borderRadius: "16px",
+        padding: "1.2rem 1.5rem",
+        marginBottom: "1.2rem",
+        borderLeft: "4px solid #ff416c",
+        fontSize: "1rem",
+        color: "rgba(255,255,255,0.85)",
+        lineHeight: "1.6",
+      }}>
         💬 {plan.message}
       </div>
 
-      <div style={styles.nextAction}>
-        <div style={styles.nextActionTitle}>⚡ Do This RIGHT NOW</div>
-        <div style={styles.nextActionText}>{plan.nextAction}</div>
+      {/* Do this RIGHT NOW */}
+      <div style={{
+        background: "linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15))",
+        border: "1px solid rgba(102,126,234,0.4)",
+        borderRadius: "20px",
+        padding: "1.5rem",
+        marginBottom: "1.2rem",
+        boxShadow: "0 8px 32px rgba(102,126,234,0.2)",
+      }}>
+        <div style={{
+          fontSize: "0.78rem",
+          color: "#667eea",
+          fontWeight: "700",
+          textTransform: "uppercase",
+          letterSpacing: "1.5px",
+          marginBottom: "0.8rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}>
+          ⚡ DO THIS RIGHT NOW
+        </div>
+        <div style={{
+          fontSize: "1.2rem",
+          fontWeight: "700",
+          color: "#fff",
+          lineHeight: "1.4",
+        }}>
+          {plan.nextAction}
+        </div>
       </div>
 
+      {/* Priority order */}
       {plan.priorityOrder?.length > 0 && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>✅ Focus on these</div>
+        <div className="glass" style={{
+          borderRadius: "16px",
+          padding: "1.2rem",
+          marginBottom: "1rem",
+        }}>
+          <div style={{
+            fontSize: "0.78rem",
+            color: "rgba(255,255,255,0.5)",
+            fontWeight: "700",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            marginBottom: "0.8rem",
+          }}>
+            ✅ Focus on these
+          </div>
           {plan.priorityOrder.map((task, i) => (
-            <div key={i} style={styles.priorityItem}>
+            <div key={i} style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.8rem",
+              padding: "10px 0",
+              borderBottom: i < plan.priorityOrder.length - 1
+                ? "1px solid rgba(255,255,255,0.05)"
+                : "none",
+              fontSize: "0.9rem",
+            }}>
               <span style={{
                 background: "linear-gradient(90deg, #667eea, #764ba2)",
                 borderRadius: "50%",
-                width: "24px",
-                height: "24px",
+                width: "26px",
+                height: "26px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -141,18 +135,56 @@ function RescueMode({ plan, onBack }) {
         </div>
       )}
 
+      {/* Drop these */}
       {plan.dropThese?.length > 0 && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>🗑️ Drop or postpone these</div>
+        <div style={{
+          background: "rgba(244,67,54,0.05)",
+          border: "1px solid rgba(244,67,54,0.2)",
+          borderRadius: "16px",
+          padding: "1.2rem",
+          marginBottom: "1.2rem",
+        }}>
+          <div style={{
+            fontSize: "0.78rem",
+            color: "#f44336",
+            fontWeight: "700",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            marginBottom: "0.8rem",
+          }}>
+            🗑️ Drop or postpone
+          </div>
           {plan.dropThese.map((task, i) => (
-            <div key={i} style={styles.dropItem}>
+            <div key={i} style={{
+              fontSize: "0.9rem",
+              color: "rgba(255,255,255,0.4)",
+              textDecoration: "line-through",
+              padding: "6px 0",
+            }}>
               ❌ {task}
             </div>
           ))}
         </div>
       )}
 
-      <button style={styles.backBtn} onClick={onBack}>
+      {/* Back button */}
+      <button
+        onClick={onBack}
+        style={{
+          width: "100%",
+          background: "rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "14px",
+          padding: "14px",
+          color: "#fff",
+          fontSize: "1rem",
+          fontWeight: "600",
+          cursor: "pointer",
+          transition: "all 0.2s",
+        }}
+        onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
+        onMouseOut={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+      >
         ← Back to Dashboard
       </button>
     </div>
